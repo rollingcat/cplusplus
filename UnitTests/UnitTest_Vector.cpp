@@ -1,86 +1,95 @@
 
+#include "UnitTest_Util.h"
 #include "Vector.h"
 #include "gtest/gtest.h"
-#include <random>
 #include <vector>
 
+template<typename T>
 class VectorTest : public testing::Test
 {
 protected:
-    my::Vector<int> m_myVector;
-    std::vector<int> m_stdVector;
+    void pushBackRandomly(size_t num)
+    {
+        for (size_t i = 0; i < num; ++i) {
+            T num = TestUtil<T>::random();
+            this->m_myVector.push_back(num);
+            this->m_stdVector.push_back(num);
+        }
+    }
+
+    my::Vector<T> m_myVector;
+    std::vector<T> m_stdVector;
 };
 
-TEST_F(VectorTest, DefaultConstructor)
+using testing::Types;
+typedef Types<int, unsigned, float, double> TypesForTest;
+TYPED_TEST_CASE(VectorTest, TypesForTest);
+
+TYPED_TEST(VectorTest, DefaultConstructor)
 {
-    EXPECT_EQ(0, m_myVector.size());
-    EXPECT_EQ(0, m_myVector.capacity());
-    EXPECT_EQ(nullptr, m_myVector.data());
-    EXPECT_EQ(nullptr, m_myVector.begin());
-    EXPECT_EQ(nullptr, m_myVector.end());
+    EXPECT_EQ(0, this->m_myVector.size());
+    EXPECT_EQ(0, this->m_myVector.capacity());
+    EXPECT_EQ(nullptr, this->m_myVector.data());
+    EXPECT_EQ(nullptr, this->m_myVector.begin());
+    EXPECT_EQ(nullptr, this->m_myVector.end());
 }
 
-TEST_F(VectorTest, ResizeSimple)
+TYPED_TEST(VectorTest, ResizeSimple)
 {
-    m_myVector.resize(5);
-    m_stdVector.resize(5);
-    EXPECT_EQ(m_stdVector.size(), m_myVector.size());
+    this->m_myVector.resize(5);
+    this->m_stdVector.resize(5);
+    EXPECT_EQ(this->m_stdVector.size(), this->m_myVector.size());
 
-    for (size_t i = 0; i < m_myVector.size(); ++i)
-        EXPECT_EQ(m_stdVector[i], m_myVector[i]) << "at index " << i;
+    for (size_t i = 0; i < this->m_myVector.size(); ++i)
+        EXPECT_EQ(this->m_stdVector[i], this->m_myVector[i]) << "at index " << i;
 }
 
-TEST_F(VectorTest, ResizeDown)
+TYPED_TEST(VectorTest, ResizeDown)
 {
-    std::default_random_engine generator;
-    std::uniform_int_distribution<int> distribution;
-    auto random = std::bind(distribution, generator);
+    this->pushBackRandomly(20);
 
-    for (size_t i = 0; i < 20; ++i) {
-        int num = random();
-        m_myVector.push_back(num);
-        m_stdVector.push_back(num);
-    }
+    for (size_t i = 0; i < this->m_myVector.size(); ++i)
+        EXPECT_EQ(this->m_stdVector[i], this->m_myVector[i]) << "at index " << i;
 
-    for (size_t i = 0; i < m_myVector.size(); ++i)
-        EXPECT_EQ(m_stdVector[i], m_myVector[i]) << "at index " << i;
+    this->m_myVector.resize(10);
+    this->m_stdVector.resize(10);
+    EXPECT_EQ(this->m_stdVector.size(), this->m_myVector.size());
 
-    m_myVector.resize(10);
-    m_stdVector.resize(10);
-    EXPECT_EQ(m_stdVector.size(), m_myVector.size());
-
-    for (size_t i = 0; i < m_myVector.size(); ++i)
-        EXPECT_EQ(m_stdVector[i], m_myVector[i]) << "at index " << i;
+    for (size_t i = 0; i < this->m_myVector.size(); ++i)
+        EXPECT_EQ(this->m_stdVector[i], this->m_myVector[i]) << "at index " << i;
 }
 
-TEST_F(VectorTest, ResizeUp)
+TYPED_TEST(VectorTest, ResizeUp)
 {
-    std::default_random_engine generator;
-    std::uniform_int_distribution<int> distribution;
-    auto random = std::bind(distribution, generator);
+    this->pushBackRandomly(10);
 
-    for (size_t i = 0; i < 10; ++i) {
-        int num = random();
-        m_myVector.push_back(num);
-        m_stdVector.push_back(num);
-    }
+    for (size_t i = 0; i < this->m_myVector.size(); ++i)
+        EXPECT_EQ(this->m_stdVector[i], this->m_myVector[i]) << "at index " << i;
 
-    for (size_t i = 0; i < m_myVector.size(); ++i)
-        EXPECT_EQ(m_stdVector[i], m_myVector[i]) << "at index " << i;
+    this->m_myVector.resize(20);
+    this->m_stdVector.resize(20);
+    EXPECT_EQ(this->m_stdVector.size(), this->m_myVector.size());
 
-    m_myVector.resize(20);
-    m_stdVector.resize(20);
-    EXPECT_EQ(m_stdVector.size(), m_myVector.size());
-
-    for (size_t i = 0; i < m_myVector.size(); ++i)
-        EXPECT_EQ(m_stdVector[i], m_myVector[i]) << "at index " << i;
+    for (size_t i = 0; i < this->m_myVector.size(); ++i)
+        EXPECT_EQ(this->m_stdVector[i], this->m_myVector[i]) << "at index " << i;
 }
 
-TEST_F(VectorTest, ReserveCapacity)
+TYPED_TEST(VectorTest, ReserveCapacity)
 {
-    m_myVector.reserve(16);
-    m_stdVector.reserve(16);
+    this->m_myVector.reserve(16);
+    this->m_stdVector.reserve(16);
 
-    EXPECT_EQ(m_stdVector.size(), m_myVector.size());
-    EXPECT_EQ(m_stdVector.capacity(), m_myVector.capacity());
+    EXPECT_EQ(this->m_stdVector.size(), this->m_myVector.size());
+    EXPECT_EQ(this->m_stdVector.capacity(), this->m_myVector.capacity());
+
+    this->pushBackRandomly(8);
+
+    this->m_myVector.reserve(30);
+    this->m_stdVector.reserve(30);
+
+    EXPECT_EQ(this->m_stdVector.size(), this->m_myVector.size());
+    EXPECT_EQ(this->m_stdVector.capacity(), this->m_myVector.capacity());
+
+    for (size_t i = 0; i < this->m_myVector.size(); ++i)
+        EXPECT_EQ(this->m_stdVector[i], this->m_myVector[i]) << "at index " << i;
 }
